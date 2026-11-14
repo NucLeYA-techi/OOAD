@@ -1,0 +1,78 @@
+# Hospital Management System — one-command stack
+# Usage: docker compose up -d --build
+#   db        MySQL 8            host port 3307
+#   backend   Java Spring Boot   host port 5000  <- the app the UI talks to
+#   frontend  React (Vite)       host port 5173
+# The earlier TypeScript backend is kept, but only starts on demand:
+#   docker compose --profile ts up -d backend-ts      (host port 5001)
+services:
+  db:
+    image: mysql:8
+    container_name: hms-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-hmsroot}
+      MYSQL_DATABASE: hospital_management
+    ports:
+      # Host 3307 to avoid clashing with any local MySQL on 3306;
+      # inside the Docker network the DB is always db:3306
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Schema auto-loaded on first start (fresh volume only)
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-hmsroot}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+
+  # DEFAULT backend: Java Spring Boot, MVC layers (controller -> service -> repository).
+  backend:
+    build: ./backend-java
+    container_name: hms-backend
+    environment:
+      PORT: 5000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-hmsroot}
+      DB_NAME: hospital_management
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Optional: the previous TypeScript backend (kept for reference/comparison).
+  # Not started by a plain `docker compose up -d`.
+  backend-ts:
+    build: ./backend
+    container_name: hms-backend-ts
+    profiles: ["ts"]
+    environment:
+      PORT: 5000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-hmsroot}
+      DB_NAME: hospital_management
+    ports:
+      - "5001:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: hms-frontend
+    environment:
+      # Inside Docker, the frontend reaches the API service by name
+      VITE_BACKEND_URL: http://backend:5000
+    ports:
+      - "5173:5173"   # <-- Frontend runs on http://localhost:5173
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
