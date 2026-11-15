@@ -1,10 +1,9 @@
 # Hospital Management System — one-command stack
 # Usage: docker compose up -d --build
 #   db        MySQL 8            host port 3307
-#   backend   Java Spring Boot   host port 5000  <- the app the UI talks to
+#   backend   Java Spring Boot   host port 5000
 #   frontend  React (Vite)       host port 5173
-# The earlier TypeScript backend is kept, but only starts on demand:
-#   docker compose --profile ts up -d backend-ts      (host port 5001)
+# Optional original JS backend: docker compose --profile js up -d backend-js (:5001)
 services:
   db:
     image: mysql:8
@@ -27,7 +26,6 @@ services:
       retries: 20
       start_period: 15s
 
-  # DEFAULT backend: Java Spring Boot, MVC layers (controller -> service -> repository).
   backend:
     build: ./backend-java
     container_name: hms-backend
@@ -44,12 +42,13 @@ services:
       db:
         condition: service_healthy
 
-  # Optional: the previous TypeScript backend (kept for reference/comparison).
-  # Not started by a plain `docker compose up -d`.
-  backend-ts:
+  # Optional: the original JavaScript (Express + mysql2) backend — same API.
+  # Not started by default. Run it with:
+  #   docker compose --profile js up -d backend-js   -> http://localhost:5001
+  backend-js:
     build: ./backend
-    container_name: hms-backend-ts
-    profiles: ["ts"]
+    container_name: hms-backend-js
+    profiles: ["js"]
     environment:
       PORT: 5000
       DB_HOST: db

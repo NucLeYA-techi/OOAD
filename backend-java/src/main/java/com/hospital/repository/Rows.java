@@ -9,8 +9,7 @@ import java.util.Map;
 
 /**
  * Small helper: makes JDBC row values JSON-friendly and keeps column names
- * exactly as the database calls them (snake_case), so this Java backend
- * returns the SAME JSON shape as the TypeScript backend.
+ * exactly as the database calls them (snake_case).
  *
  * (DATE/TIME/TIMESTAMP -> String; null stays null.)
  */

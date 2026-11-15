@@ -14,8 +14,7 @@ import java.util.Map;
  * MODEL (MVC): business logic — the Facade of the design.
  * Controllers call only this service. The service owns its five repositories
  * (composition), holds the booking Strategy (injected) and is the Observer
- * Subject for status changes. Read methods return raw snake_case rows, so
- * this backend answers with the same JSON as the TypeScript one.
+ * Subject for status changes. Read methods return raw snake_case rows.
  */
 @Service
 public class HospitalService {

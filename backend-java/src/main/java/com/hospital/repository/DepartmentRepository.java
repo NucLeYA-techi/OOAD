@@ -10,8 +10,8 @@ import java.util.Map;
 
 /**
  * MODEL (MVC): data access for the `department` table.
- * Read methods return raw rows (snake_case, like the TypeScript backend);
- * write methods take entities.
+ * Read methods return raw rows (snake_case column names); write methods
+ * take entities.
  */
 @Repository
 public class DepartmentRepository {

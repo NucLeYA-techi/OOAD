@@ -1,8 +1,7 @@
 # Hospital Management System (HMS) — DBMS Project
 
 > Based on `dbms_rep (1).pdf` — Database Project Report, RIT, 24CSL47.
-> Full-stack: **MySQL 8 (3NF schema) + Java Spring Boot (MVC) REST API + React/Vite SPA**.
-> The earlier TypeScript backend is kept for reference but is not started by default.
+> **MySQL 8 (3NF schema) + Java Spring Boot (MVC) REST API + React/Vite SPA.**
 
 ## One command
 
@@ -17,20 +16,19 @@ docker compose up -d --build
 | MySQL | 3307 | `mysql -h 127.0.0.1 -P 3307 -u root -phmsroot` |
 
 Stop: `docker compose down` (add `-v` to also wipe the database volume).
-
-The database schema + seed data auto-load on first start.
+The schema + seed data auto-load on first start.
 
 ## Project structure
 
 ```
 dbms/
 ├── README.md
-├── docker-compose.yml          # db + Java backend + frontend (+ optional TS backend)
+├── docker-compose.yml          # db + Java backend + frontend
 ├── database/
 │   ├── schema.sql              # DDL: 5 tables, FKs, CHECKs, UNIQUE, indexes + seed DML
 │   └── ER-Diagram.md           # ER + relational design + normalization notes
-├── backend-java/               # DEFAULT backend — Spring Boot, MVC + design patterns
-├── backend/                    # previous TypeScript backend (optional, --profile ts)
+├── backend-java/               # Spring Boot backend — MVC + design patterns (default)
+├── backend/                    # original JavaScript (Express + mysql2) backend (optional)
 └── frontend/                   # React + Vite
 ```
 
@@ -40,9 +38,8 @@ dbms/
 backend-java/src/main/java/com/hospital/
 ├── HospitalApplication.java       entry point (Spring Boot)
 ├── config/DatabaseManager.java    Singleton — one shared database handle
-├── model/                         MODEL: Person (abstract) → Doctor/Patient,
+├── model/                         MODEL: Person (abstract) → Doctor / Patient,
 │                                  Department, Appointment, MedicalRecord
-│                                  (+ typed exceptions)
 ├── repository/                    MODEL (data access): 5 JdbcTemplate repositories
 ├── strategy/                      Strategy: BookingValidationStrategy + StrictDoubleBooking
 ├── observer/                      Observer: AuditLogger, NotificationService
@@ -57,16 +54,20 @@ controllers, no HTTP in the service.
 Design patterns: **Singleton** (`DatabaseManager`), **Factory/DI** (Spring
 constructor injection), **Strategy** (double-booking policy), **Observer**
 (audit + notification on status change), **Facade** (`HospitalService`),
-**Template Method**, **Adapter** (controllers adapt HTTP to the service).
+**Adapter** (controllers adapt HTTP to the service). Inheritance:
+`Person` → `Doctor`/`Patient`.
 
-Read endpoints return the same snake_case JSON rows as the TypeScript backend,
-so the React frontend works unchanged against either one.
+## Original JavaScript backend (optional)
 
-### Optional: run the TypeScript backend instead
+The first version of the backend is kept as-is in `backend/` (Express + mysql2,
+plain JavaScript, one router per table). It is **not started by default**:
 
 ```bash
-docker compose --profile ts up -d backend-ts   # http://localhost:5001
+docker compose --profile js up -d backend-js    # http://localhost:5001
 ```
+
+Run it locally: `cd backend && npm install && npm run dev` (uses `.env`, see
+`backend/.env.example`).
 
 ## Modules (5 entities)
 
@@ -94,7 +95,7 @@ Schema is normalized to **3NF** (see `database/ER-Diagram.md`).
 | GET/PUT/DELETE | `/patients/:id` | read / update / delete (cascades appointments/records) |
 | GET/POST | `/appointments` | list (joined patient+doctor) / create (409 on double-book) |
 | GET/PUT/DELETE | `/appointments/:id` | read / update / delete |
-| PATCH | `/appointments/:id/status` | change status (state machine: 400 on illegal transition) |
+| PATCH | `/appointments/:id/status` | change status (400 on illegal transition) |
 | GET/POST | `/medical-records` | list (joined) / create |
 | GET/PUT/DELETE | `/medical-records/:id` | read / update / delete |
 
@@ -108,7 +109,7 @@ interpolation (SQL-injection safe).
 mysql -u root -p -e "CREATE DATABASE hospital_management;"
 mysql -u root -p hospital_management < database/schema.sql
 
-# 2. Java backend (needs JDK 17 + Maven)
+# 2. Java backend (JDK 17 + Maven)
 cd backend-java && mvn -DskipTests package && java -jar target/hms-backend-java-1.0.0.jar
 
 # 3. Frontend

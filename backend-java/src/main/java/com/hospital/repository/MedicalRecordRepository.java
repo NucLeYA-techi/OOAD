@@ -23,7 +23,7 @@ public class MedicalRecordRepository {
         this.jdbc = jdbc;
     }
 
-    /** Joined raw rows (patient/doctor names included) — same as the TS backend. */
+    /** Joined raw rows (patient/doctor names included). */
     public List<Map<String, Object>> findAllRows() {
         return Rows.normalize(jdbc.queryForList("""
                 SELECT m.*, p.first_name AS patient_first_name, p.last_name AS patient_last_name,

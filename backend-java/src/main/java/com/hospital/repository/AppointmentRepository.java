@@ -33,7 +33,7 @@ public class AppointmentRepository {
         this.jdbc = jdbc;
     }
 
-    /** Joined raw rows — same JSON shape as the TypeScript backend. */
+    /** Joined raw rows (patient/doctor names included). */
     public List<Map<String, Object>> findAllRows() {
         return Rows.normalize(jdbc.queryForList(
                 JOINED + " ORDER BY a.appointment_date DESC, a.appointment_time DESC"));

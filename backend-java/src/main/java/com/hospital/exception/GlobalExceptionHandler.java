@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Map;
 
 /**
- * Translates app errors and database constraint violations into the same
- * `{"error": "..."}` shape the TypeScript backend returns (one API, two
- * implementations — interchangeable from the frontend's point of view).
+ * Translates app errors and database constraint violations into one
+ * `{"error": "..."}` JSON envelope for the whole API.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
