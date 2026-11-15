@@ -1,29 +1,25 @@
 /**
- * Doctor entity — table `doctor`. Validates fee/email; references its
- * department by id (association many-to-one, role: employs).
+ * Doctor entity — table `doctor`.
+ *
+ * Generalization: Doctor IS-A Person (id, names, phone, e-mail inherited).
+ * It adds the doctor-specific state (specialization, fee, department) and
+ * references its department by id (association many-to-one, role: employs).
  */
 import { ValidationError } from '../errors.js';
+import { Person, type PersonRow } from './Person.js';
 
-export interface DoctorRow {
+export interface DoctorRow extends PersonRow {
   doctor_id?: number | null;
-  first_name: string;
-  last_name: string;
   specialization?: string;
-  phone?: string;
-  email: string;
   consultation_fee?: number | string;
   department_id: number | string;
 }
 
-export class Doctor {
-  private _id: number | null;
-  private _firstName: string;
-  private _lastName: string;
-  private _specialization: string;
-  private _phone: string;
-  private _email: string;
-  private _fee: number;
-  private _departmentId: number | string;
+export class Doctor extends Person {
+  private readonly _id: number | null;
+  private readonly _specialization: string;
+  private readonly _fee: number;
+  private readonly _departmentId: number | string;
 
   constructor({
     doctor_id = null,
@@ -35,9 +31,7 @@ export class Doctor {
     consultation_fee = 0,
     department_id,
   }: DoctorRow) {
-    if (!first_name || !last_name) {
-      throw new ValidationError('first_name and last_name are required.');
-    }
+    super({ first_name, last_name, phone, email });
     if (!email || !email.includes('@')) {
       throw new ValidationError('A valid email is required.');
     }
@@ -46,11 +40,7 @@ export class Doctor {
     }
     if (department_id == null) throw new ValidationError('department_id is required.');
     this._id = doctor_id;
-    this._firstName = first_name;
-    this._lastName = last_name;
     this._specialization = specialization ?? '';
-    this._phone = phone ?? '';
-    this._email = email;
     this._fee = Number(consultation_fee) || 0;
     this._departmentId = department_id;
   }
@@ -58,9 +48,7 @@ export class Doctor {
   id(): number | null {
     return this._id;
   }
-  fullName(): string {
-    return `${this._firstName} ${this._lastName}`;
-  }
+
   departmentId(): number | string {
     return this._departmentId;
   }

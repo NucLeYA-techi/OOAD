@@ -40,8 +40,9 @@ dbms/
 backend-java/src/main/java/com/hospital/
 ├── HospitalApplication.java       entry point (Spring Boot)
 ├── config/DatabaseManager.java    Singleton — one shared database handle
-├── model/                         MODEL: Department, Doctor, Patient,
-│                                  Appointment, MedicalRecord (+ typed exceptions)
+├── model/                         MODEL: Person (abstract) → Doctor/Patient,
+│                                  Department, Appointment, MedicalRecord
+│                                  (+ typed exceptions)
 ├── repository/                    MODEL (data access): 5 JdbcTemplate repositories
 ├── strategy/                      Strategy: BookingValidationStrategy + StrictDoubleBooking
 ├── observer/                      Observer: AuditLogger, NotificationService

@@ -6,6 +6,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
+docs/
 
 # ---- Node (frontend + backend) ----
 node_modules/
